@@ -1,0 +1,21 @@
+{
+  "name": "scan-console",
+  "version": "1.0.0",
+  "description": "端口 / 目录扫描运行台 —— Web 控制台 + Node.js 扫描引擎（对标简化版 nmap / dirb）",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [
+    "port-scan",
+    "directory-scan",
+    "security",
+    "pentest"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.22.3"
+  }
+}

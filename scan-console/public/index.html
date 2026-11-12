@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SCAN//CONSOLE</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <canvas id="matrix"></canvas>
+  <div class="scanlines"></div>
+  <div class="vignette"></div>
+
+  <header class="topbar">
+    <div class="brand"><span class="logo">█</span> SCAN<span class="dim">//</span>CONSOLE<span class="blink">_</span></div>
+    <button id="backHome" class="btn-back hidden">[ ← DISCONNECT ]</button>
+  </header>
+
+  <div class="legal">⚠ 仅可用于你<b>拥有</b>或已获<b>书面授权</b>的目标。未经授权扫描他人资产可能违反法律与服务条款。</div>
+
+  <div id="fileWarn" class="legal hidden" style="border-color:var(--red);color:var(--red);background:rgba(255,46,77,.10)">⛔ 检测到你正用 <b>file://</b> 直接打开页面 —— CSS/JS 与扫描接口都无法加载，且无法真正扫描。请改为访问 <b style="color:#fff">http://localhost:3000</b>（需先运行 <b style="color:#fff">npm start</b> 启动服务）。</div>
+
+  <main id="app">
+    <!-- ============ 首页：两个入口 ============ -->
+    <section id="home" class="view">
+      <div id="bootText" class="boot-text"></div>
+      <h1 class="glitch" data-text="SELECT MODULE">SELECT MODULE</h1>
+      <p class="subtitle">// 选择入侵向量 — 端口探测 / 目录爆破</p>
+      <div class="modules">
+        <div class="module" data-goto="port">
+          <div class="mod-icon">🛰️</div>
+          <div class="mod-name">PORT SCAN</div>
+          <div class="mod-cn">端口扫描</div>
+          <div class="mod-desc">TCP connect 探测 · 识别开放端口与服务<br />默认 443 / 80 / 21 / 22 · 支持自定义端口与范围</div>
+          <div class="mod-cta">[ INITIATE → ]</div>
+        </div>
+        <div class="module" data-goto="dir">
+          <div class="mod-icon">📁</div>
+          <div class="mod-name">DIR SCAN</div>
+          <div class="mod-cn">目录扫描</div>
+          <div class="mod-desc">字典路径爆破 · 覆盖 ASP / ASPX / JSP / PHP<br />发现隐藏后台、接口与文件</div>
+          <div class="mod-cta">[ INITIATE → ]</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 端口扫描终端 ============ -->
+    <section id="port" class="view hidden">
+      <div class="console">
+        <div class="console-bar">
+          <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+          <span class="console-title">root@scanner:~/modules/portscan — PORT SCAN</span>
+        </div>
+        <div class="console-body">
+          <label class="term-line">
+            <span class="prompt">target&gt;</span>
+            <input id="portTarget" type="text" placeholder="输入目标 IP 或域名，如 192.168.1.1 / scanme.nmap.org" />
+          </label>
+
+          <div class="term-block">
+            <div class="term-label">// 默认端口（点击切换 ON/OFF）</div>
+            <div id="portPresets" class="chips"></div>
+          </div>
+
+          <label class="term-line">
+            <span class="prompt">ports&gt;</span>
+            <input id="portCustom" type="text" placeholder="自定义端口，如 80,443,21-25,3306（留空仅扫勾选项）" />
+          </label>
+
+          <div class="term-row">
+            <span class="muted">SCAN_QUEUED: <b id="portCount" class="hl">0</b> ports</span>
+            <button id="portScanBtn" class="btn-run">▶ EXECUTE SCAN</button>
+          </div>
+
+          <div id="portStatus" class="status-line"></div>
+          <div id="portOutput" class="term-output hidden"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 目录扫描终端 ============ -->
+    <section id="dir" class="view hidden">
+      <div class="console">
+        <div class="console-bar">
+          <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+          <span class="console-title">root@scanner:~/modules/dirscan — DIRECTORY SCAN</span>
+        </div>
+        <div class="console-body">
+          <label class="term-line">
+            <span class="prompt">target&gt;</span>
+            <input id="dirTarget" type="text" placeholder="输入目标 URL，如 http://192.168.1.1" />
+          </label>
+
+          <div class="term-block">
+            <div class="term-label">// 字典扩展名（生成探测路径时使用）</div>
+            <div id="dirExts" class="chips"></div>
+          </div>
+
+          <label class="term-block">
+            <div class="term-label">// 自定义字典（每行一个词，留空用内置常用字典）</div>
+            <textarea id="dirWordlist" rows="4" placeholder="admin&#10;login&#10;upload"></textarea>
+          </label>
+
+          <div class="term-row">
+            <span class="muted">PATHS_QUEUED: <b id="dirCount" class="hl">0</b> paths</span>
+            <button id="dirScanBtn" class="btn-run">▶ EXECUTE SCAN</button>
+          </div>
+
+          <div id="dirStatus" class="status-line"></div>
+          <div id="dirOutput" class="term-output hidden"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">SCAN//CONSOLE · local node.js engine · authorized security testing only</footer>
+
+  <div id="bootOverlay" class="boot-overlay hidden"></div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
